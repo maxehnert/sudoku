@@ -62,6 +62,11 @@ module.exports.check3x3Square = function(board, column, row, value){
     columnCorner += squareSize;
   }
 
+  // find the upper most row
+  while(row >= rowCorner + squareSize){
+    rowCorner += squareSize;
+  }
+
   // Iterate through each row
   for(var i = rowCorner; i < rowCorner + squareSize; i++){
     // iterate through each column
@@ -74,4 +79,69 @@ module.exports.check3x3Square = function(board, column, row, value){
   }
   // if no math was found, return true
   return true;
+};
+
+module.exports.checkValue = function(board, column, row, value){
+  if(this.checkRow(board, row, value) &&
+    this.checkColumn(board, column, value) &&
+    this.check3x3Square(board, column, row, value)){
+      return true;
+    }
+    else {
+      return false;
+    }
+};
+
+module.exports.solvePuzzle = function(board, emptyPositions){
+  // variables to track our position in the solver
+  var limit = 9,
+      i, row, column, value, found;
+
+  for(i = 0; i < emptyPositions.length;){
+
+    row = emptyPositions[i][0];
+    column = emptyPositions[i][1];
+
+    // try the next value
+    value = board[row][column] + 1;
+
+    // was a valid number found?
+    found = false;
+
+    // keep trying new value until either the limit was rached or a valid value was found
+    while(!found && value <= limit){
+
+      // if a valid value is found, mark found true,
+      // set the postion to the value, and move to the next position
+      if(this.checkValue(board, column, row, value)){
+        found = true;
+        board[row][column] = value;
+        i++;
+      }
+      // otherwise try the next value
+      else{
+        value++;
+      }
+    }
+    // if no valid value ws found and the limit was reache, move back to the previous position
+    if(!found){
+      board[row][column] = 0;
+      i--;
+    }
+  }
+
+  // a solution is found so log it
+  board.forEach( function(row){
+    console.log(row.join());
+  });
+
+  // return the solution
+  return board;
+}
+
+module.exports.solveSudoku = function(board){
+  var parsedBoard = this.parseBoard(board);
+  var emptyPositions = this.saveEmptyPositions(parsedBoard);
+
+  return this.solvePuzzle(parsedBoard, emptyPositions);
 };
